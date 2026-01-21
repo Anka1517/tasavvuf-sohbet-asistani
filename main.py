@@ -1,8 +1,8 @@
 import streamlit as st
-import openai
 import os
+from openai import OpenAI
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 st.set_page_config(page_title="Tasavvuf Sohbet Asistanı")
 
@@ -28,8 +28,8 @@ if st.button("Gönder"):
         st.warning("Lütfen bir soru yazınız.")
     else:
         with st.spinner("Cevap hazırlanıyor..."):
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": system_prompts[lang]},
                     {"role": "user", "content": user_input}
