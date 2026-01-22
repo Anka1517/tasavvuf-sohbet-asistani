@@ -1,10 +1,11 @@
-from openai import OpenAI
 import os
+from openai import OpenAI
+import streamlit as st
 
-api_key = os.getenv("OPENAI_API_KEY", "").strip()
-base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").strip()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "").strip()
 
 client = OpenAI(
-    api_key=api_key,
-    base_url=base_url
+    api_key=OPENAI_API_KEY,
+    base_url=OPENAI_BASE_URL if OPENAI_BASE_URL else None
 )
