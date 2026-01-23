@@ -69,14 +69,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-# Görsel
-st.image(
-    "https://i.imgur.com/your_image_here.jpg",
-    caption="Sırra açılan kapı",
-    use_container_width=True
-)
-
 # --- OpenAI entegrasyonu ŞİMDİLİK KAPALI ---
 # İleride burası adım adım açılacak
 #
