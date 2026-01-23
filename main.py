@@ -51,16 +51,32 @@ if st.button("🌿 Sor"):
         )
 
         # --- Yavaş ve edepli yazım ---
-        cevap_alani = st.empty()
+        cevap_alani = st.divider()
         yazilan = ""
 
-        for harf in cevap:
-            yazilan += harf
-            cevap_alani.markdown(yazilan)
+st.divider()
+   else:
+        with st.spinner("Cevap hazırlanıyor…"):
             time.sleep(0.04)
 
-st.divider()
-
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "Sen İmam-ı Gazâlî çizgisinde, edepli, kısa, "
+                            "acele etmeyen bir tasavvuf sohbet asistanısın. "
+                            "Modern yorum yapmazsın."
+                        )
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Kaynak metinler:\n{gazali_texts}\n\nSoru: {question}"
+                    }
+                ],
+                temperature=0.4
+            )
 # --- Alt Not ---
 st.markdown(
     "<div style='text-align:center; font-size:0.9em; color:gray;'>"
@@ -83,33 +99,12 @@ gazali_texts = load_texts()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # ---- Soru Alanı ----
-question = st.text_area("Sorunuzu edep ile yazınız:", height=100)
+question = st.text_area(height=100)
 
 if st.button("Sor"):
     if question.strip() == "":
         st.warning("Soru boş olmaz.")
-    else:
-        with st.spinner("Cevap hazırlanıyor…"):
-            time.sleep(1.5)
-
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "Sen İmam-ı Gazâlî çizgisinde, edepli, kısa, "
-                            "acele etmeyen bir tasavvuf sohbet asistanısın. "
-                            "Modern yorum yapmazsın."
-                        )
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Kaynak metinler:\n{gazali_texts}\n\nSoru: {question}"
-                    }
-                ],
-                temperature=0.4
-            )
+ 
 
             st.markdown("### 🌿 Cevap")
             st.write(response.choices[0].message.content)
