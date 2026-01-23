@@ -1,13 +1,11 @@
-import streamlit as st
+import os
 import time
+import streamlit as st
+from openai import OpenAI
 
-# --- Sayfa Ayarları ---
-st.set_page_config(
-    page_title="Tasavvuf Sohbet Asistanı",
-    layout="centered"
-)
+# ---- Sayfa Ayarları ----
+st.set_page_config(page_title="Tasavvuf Sohbet Asistanı", layout="centered")
 
-# --- Başlık ve Karşılama ---
 st.title("Tasavvuf Sohbet Asistanı")
 
 st.markdown("""
@@ -21,78 +19,55 @@ Sorularınla gel; acele etme.
 Cevaplar bazen bir cümlede,  
 bazen bir susuşta gizlidir.
 
-*Niyetini temiz tut,  
-sözünü sade söyle.*
+**Niyetini temiz tut,  
+sözünü sade söyle.**
+
+🕊️ *Sormak istediğin bir mesele varsa:*  
+**Sırra açılan kapı, edep ile aralanır.**
 """)
 
-st.divider()
+# ---- Gazali Metinlerini Yükle ----
+def load_texts():
+    base_path = "data/gazali"
+    texts = ""
+    for file in os.listdir(base_path):
+        with open(os.path.join(base_path, file), "r", encoding="utf-8") as f:
+            texts += f.read() + "\n\n"
+    return texts
 
-# --- Soru Alanı ---
-st.markdown("### 🕊️ Sormak istediğin bir mesele varsa:")
+gazali_texts = load_texts()
 
-soru = st.text_area(
-    label="",
-    placeholder="Kalbine düşen soruyu buraya yaz…",
-    height=120
-)
+# ---- OpenAI ----
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# --- Sor Butonu ---
-if st.button("🌿 Sor"):
-    if soru.strip() == "":
-        st.warning("Lütfen önce bir soru yaz.")
+# ---- Soru Alanı ----
+question = st.text_area("Sorunuzu edep ile yazınız:", height=100)
+
+if st.button("Sor"):
+    if question.strip() == "":
+        st.warning("Soru boş olmaz.")
     else:
-        st.markdown("### 📜 Cevap")
+        with st.spinner("Cevap hazırlanıyor…"):
+            time.sleep(1.5)
 
-        cevap = (
-            "Bu sualin cevabı, ilimden önce edepte gizlidir.\n\n"
-            "Hak yolunda arayan kimse bilir ki;\n"
-            "her soru hemen cevap bulmaz.\n\n"
-            "Bazen beklemek, cevabın kendisidir."
-        )
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "Sen İmam-ı Gazâlî çizgisinde, edepli, kısa, "
+                            "acele etmeyen bir tasavvuf sohbet asistanısın. "
+                            "Modern yorum yapmazsın."
+                        )
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Kaynak metinler:\n{gazali_texts}\n\nSoru: {question}"
+                    }
+                ],
+                temperature=0.4
+            )
 
-        # --- Yavaş ve edepli yazım ---
-        cevap_alani = st.empty()
-        yazilan = ""
-
-        for harf in cevap:
-            yazilan += harf
-            cevap_alani.markdown(yazilan)
-            time.sleep(0.04)
-
-st.divider()
-
-# --- Alt Not ---
-st.markdown(
-    "<div style='text-align:center; font-size:0.9em; color:gray;'>"
-    "Sırra açılan kapı, edep ile aralanır."
-    "</div>",
-    unsafe_allow_html=True
-)
-
-# --- OpenAI entegrasyonu ŞİMDİLİK KAPALI ---
-# İleride burası adım adım açılacak
-#
-# import os
-# from openai import OpenAI
-#
-# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
-# OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "").strip()
-#
-# client = OpenAI(
-#     api_key=OPENAI_API_KEY,
-#     base_url=OPENAI_BASE_URL if OPENAI_BASE_URL else None
-# )
-
-
-
-#import os
-#from openai import OpenAI
-#import streamlit as st
-
-#OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
-#OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "").strip()
-
-#client = OpenAI(
-#    api_key=OPENAI_API_KEY,
-#    base_url=OPENAI_BASE_URL if OPENAI_BASE_URL else None
-#)
+            st.markdown("### 🌿 Cevap")
+            st.write(response.choices[0].message.content)
